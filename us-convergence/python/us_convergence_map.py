@@ -10,7 +10,6 @@ import pandas as pd
 import statsmodels.api as sm
 from bs4 import BeautifulSoup
 import subprocess,os
-import runProcs
 import matplotlib.pyplot as plt
 plt.style.use('classic')
 plt.rcParams['figure.facecolor'] = 'white'
@@ -103,8 +102,8 @@ model = sm.OLS(growth,X)
 results = model.fit()
 results.params
 
-slope = results.params[1]
-inter = results.params[0]
+slope = results.params.iloc[1]
+inter = results.params.iloc[0]
 
 
 # In[6]:
@@ -121,9 +120,9 @@ plt.legend(loc='upper right',fontsize='15')
 
 for i,state in enumerate(state_income.columns):
     if state in csa:
-        plt.text(origY[i], growth[i], state, color="red",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
+        plt.text(origY.iloc[i], growth[i], state, color="red",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
     else:
-        plt.text(origY[i], growth[i], state, color="#11557c",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
+        plt.text(origY.iloc[i], growth[i], state, color="#11557c",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
 
 
 ax.set_ylim([1,3.5])
@@ -319,11 +318,4 @@ subprocess.call(makegif,shell=True)
 # for files in os.listdir('.'):
 #     if files.endswith('.css') or files.endswith('.svg'):
 #         os.remove(files)
-
-
-# In[14]:
-
-
-# 6. Export notebook to .py
-runProcs.exportNb('us_convergence_map')
 
