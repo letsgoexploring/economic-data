@@ -7,7 +7,6 @@
 import numpy as np
 import pandas as pd
 import json
-import runProcs
 from urllib.request import urlopen
 import os
 
@@ -156,7 +155,7 @@ df.index.names = ['State','Year']
 df['DataValue'] = df['DataValue'].replace('(NA)',np.nan)
 
 
-# Extract income data
+# # Extract income data
 data_y = df['DataValue'].str.replace(',','').astype(float)
 data_y.name = 'income'
 data_y = data_y.unstack('State')
@@ -175,20 +174,24 @@ easterlin_data = pd.read_csv('../historic_data/Historical Statistics of the US -
 
 # Import historic CPI data
 historic_cpi_data=pd.read_csv('../historic_data/Historical Statistics of the US - cpi.csv',index_col=0)
-historic_cpi_data = historic_cpi_data/historic_cpi_data.loc[1929]*float(data_p.loc['1929'])
+historic_cpi_data = historic_cpi_data/historic_cpi_data.loc[1929]*data_p.loc['1929'].iloc[0]
 
 
 # In[8]:
 
 
 # Construct series for real incomes in 1840, 1880, and 1900
-df_1840 = easterlin_data['Income per capita - 1840 - A [cur dollars]']/float(historic_cpi_data.loc[1840])
-df_1880 = easterlin_data['Income per capita - 1880 [cur dollars]']/float(historic_cpi_data.loc[1890])
-df_1900 = easterlin_data['Income per capita - 1900 [cur dollars]']/float(historic_cpi_data.loc[1900])
+df_1840 = easterlin_data['Income per capita - 1840 - A [cur dollars]']/historic_cpi_data.loc[1840].iloc[0]
+df_1880 = easterlin_data['Income per capita - 1880 [cur dollars]']/historic_cpi_data.loc[1890].iloc[0]
+df_1900 = easterlin_data['Income per capita - 1900 [cur dollars]']/historic_cpi_data.loc[1900].iloc[0]
 
 # Put into a DataFrame and concatenate with previous data beginning in 1929
 df = pd.DataFrame({pd.to_datetime('1840'):df_1840,pd.to_datetime('1880'):df_1880,pd.to_datetime('1900'):df_1900}).transpose()
 df = pd.concat([data_y,df]).sort_index()
+
+# Replace 0s for Alaska and Hawaii with NaN. 
+df.loc[df['AK']==0,'AK']=np.nan
+df.loc[df['HI']==0,'HI']=np.nan
 
 
 # In[9]:
@@ -196,16 +199,10 @@ df = pd.concat([data_y,df]).sort_index()
 
 # Export data to csv
 series = df.sort_index()
-dropCols = [u'AK', u'HI', u'New England', u'Mideast', u'Great Lakes', u'Plains', u'Southeast', u'Southwest', u'Rocky Mountain', u'Far West', u'Far West *']
+# dropCols = [u'AK', u'HI', u'New England', u'Mideast', u'Great Lakes', u'Plains', u'Southeast', u'Southwest', u'Rocky Mountain', u'Far West','Far West *']
+dropCols = [u'New England', u'Mideast', u'Great Lakes', u'Plains', u'Southeast', u'Southwest', u'Rocky Mountain', u'Far West','Far West *']
 for c in dropCols:
     series = series.drop([c],axis=1)
 
 series.to_csv('../csv/state_income_data.csv',na_rep='NaN')
-
-
-# In[10]:
-
-
-# Export notebook to .py
-runProcs.exportNb('state_income_data')
 

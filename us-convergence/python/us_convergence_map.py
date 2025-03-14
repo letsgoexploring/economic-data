@@ -82,6 +82,12 @@ state_income.index
 # In[5]:
 
 
+help(sm.OLS)
+
+
+# In[6]:
+
+
 # 2. Compute statistics
 
 state_income_from_1929 = state_income.iloc[3:]
@@ -98,7 +104,7 @@ for i in state_income_from_1929.columns:
 # 2.3 OLS regression
 X = sm.add_constant(origY)
 
-model = sm.OLS(growth,X)
+model = sm.OLS(growth,X,missing='drop')
 results = model.fit()
 results.params
 
@@ -106,7 +112,7 @@ slope = results.params.iloc[1]
 inter = results.params.iloc[0]
 
 
-# In[6]:
+# In[7]:
 
 
 # 3.1 Plots
@@ -119,10 +125,11 @@ ax.plot(np.arange(0,20,0.001),inter+slope*np.arange(0,20,0.001),'-k',label='best
 plt.legend(loc='upper right',fontsize='15')
 
 for i,state in enumerate(state_income.columns):
-    if state in csa:
-        plt.text(origY.iloc[i], growth[i], state, color="red",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
-    else:
-        plt.text(origY.iloc[i], growth[i], state, color="#11557c",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
+    if state not in ['AK','HI']:
+        if state in csa:
+            plt.text(origY.iloc[i], growth[i], state, color="red",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
+        else:
+            plt.text(origY.iloc[i], growth[i], state, color="#11557c",fontsize=12, clip_on=True,horizontalalignment='center',verticalalignment='center',alpha = 1)
 
 
 ax.set_ylim([1,3.5])
@@ -135,7 +142,7 @@ plt.tight_layout()
 plt.savefig('../png/fig_us_statesIncomeGrowth.png',bbox_inches='tight',dpi=120)
 
 
-# In[7]:
+# In[8]:
 
 
 # 3.2 Plot income per capita in all states
@@ -166,7 +173,7 @@ plt.tight_layout()
 plt.savefig('../png/fig_us_statesIncome.png',bbox_inches='tight',dpi=120)
 
 
-# In[8]:
+# In[9]:
 
 
 # 3.2 Plot income per capita in all states
@@ -175,11 +182,12 @@ ax = fig.add_subplot(1, 1, 1)
 
 
 for i,state in enumerate(state_income.columns):
-    if state not in csa:
-        north = ax.plot(state_income.index,(state_income[state]/usIncome-1),'-b',lw=1,alpha=0.5,label='Union')
-
-    else:
-        south = ax.plot(state_income.index,(state_income[state]/usIncome-1),'-r',lw=2,label='South')
+    if state not in ['AK','HI']:
+        if state not in csa:
+            north = ax.plot(state_income.index,(state_income[state]/usIncome-1),'-b',lw=1,alpha=0.5,label='Union')
+    
+        else:
+            south = ax.plot(state_income.index,(state_income[state]/usIncome-1),'-r',lw=2,label='South')
 
 ax.set_xlim([state_income.index[0],state_income.index[-1]])
 # ax.locator_params(axis='x',nbins=5)
@@ -198,7 +206,7 @@ plt.tight_layout()
 plt.savefig('../png/fig_us_statesIncomeRelative.png',bbox_inches='tight',dpi=120)
 
 
-# In[9]:
+# In[10]:
 
 
 # 4. Make the maps. Reference: http://flowingdata.com/2009/11/12/how-to-make-a-us-county-thematic-map-using-free-tools/
@@ -214,7 +222,7 @@ bins = [-.25,-.15,-.05,.05,.15,.25]
 # bins = [-.45,-.25,-.1,-.05-.025,.025,.05,.1,.25,.45]
 
 
-# In[10]:
+# In[11]:
 
 
 # 4.2 Load svg with Beautiful Soup
@@ -222,7 +230,7 @@ soup = BeautifulSoup(svg, "lxml")
 paths = soup.findAll('path')
 
 
-# In[11]:
+# In[12]:
 
 
 # 4.3 Create color-coded maps for each year
@@ -302,7 +310,7 @@ for t,year in enumerate(state_income.index):
     subprocess.call(convert,shell=True)
 
 
-# In[12]:
+# In[13]:
 
 
 # 4.4 Create gif with imagemagick
@@ -310,14 +318,14 @@ makegif = 'magick -loop 0 -delay 50x100 ../frames/*.png ../gif/us_state_converge
 subprocess.call(makegif,shell=True)
 
 
-# In[13]:
+# In[14]:
 
 
 # 4.5 Convert gif to mp4 with ffmpeg
 subprocess.call('ffmpeg -i ../gif/us_state_convergence.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" ../mp4/us_state_convergence.mp4',shell=True)
 
 
-# In[14]:
+# In[15]:
 
 
 # 5. Clean up
