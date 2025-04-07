@@ -1,0 +1,15 @@
+# Media files
+*.svg
+*.mov
+*.mp4
+*.gif
+
+# macOS system files
+.DS_Store
+
+# Python
+*.pyc
+__pycache__/
+
+# Jupyter
+.ipynb_checkpoints/
