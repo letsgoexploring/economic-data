@@ -17,7 +17,7 @@ import numpy as np
 # \frac{M_{t}-M_{t-1}}{P_t} & = \Delta m_t + \frac{\pi_t}{1+\pi_t}m_{t-1}
 # \end{align}
 # 
-# where $\Delta m_t = m_t - m_{t-1}$ and $\pi_t = P_t/ P_{t-1} - 1$. The first term on the right-hand side is the revenue from increasing the real monetary base while the seond term is the inflation tax on the existing monetary base.
+# where $M_t$ is the monetary base, $P_t$ is the price level measured by the GDP deflator, $M_t = M_t/P_t$, is the real monetary base, $\Delta m_t = m_t - m_{t-1}$ and $\pi_t = (P_t-P_{t-1})/ P_{t-1}$. The first term on the right-hand side is the revenue from increasing the real monetary base while the seond term is the inflation tax on the existing monetary base.
 # 
 # This program downloads from FRED the following data for the US economy:
 # 
@@ -57,7 +57,7 @@ base_year = gdp_deflator.units.split(' ')[-1].split('=')[0]
 
 
 # Construct real monetary base
-real_m_base = m_base.data/gdp_deflator.data*100/1000/1000
+real_m_base = m_base.data/gdp_deflator.data*100/1000
 
 # Construct inflation data
 inflation = (gdp_deflator.data/gdp_deflator.data.shift(1))-1
@@ -68,11 +68,11 @@ inflation = (gdp_deflator.data/gdp_deflator.data.shift(1))-1
 # In[4]:
 
 
-real_m_base_col_name = 'real monetary base [billions of '+base_year+' dollars]'
+real_m_base_col_name = 'real monetary base [trillions of '+base_year+' dollars]'
 inflation_col_name = 'GDP deflator inflation'
-delta_m_base_col_name = 'change in real monetary base [billions of '+base_year+' dollars]'
-inflation_tax_col_name = 'inflation tax revenue [billions of '+base_year+' dollars]'
-total_col_name = 'total seigniorage [billions of '+base_year+' dollars]'
+delta_m_base_col_name = 'change in real monetary base [trillions of '+base_year+' dollars]'
+inflation_tax_col_name = 'inflation tax revenue [trillions of '+base_year+' dollars]'
+total_col_name = 'total seigniorage [trillions of '+base_year+' dollars]'
 
 
 # Put data into DataFrame
@@ -89,4 +89,21 @@ df.loc[df.index[1],total_col_name] = df.loc[df.index[1],delta_m_base_col_name] +
 
 # Save to csv
 df.to_csv('../csv/us_seigniorage_data.csv',index=True)
+
+
+# ## Complete the data
+
+# In[5]:
+
+
+# Change in real monetary base
+df['change in real monetary base [trillions of 2017 dollars]'] = df['real monetary base [trillions of 2017 dollars]'].diff()
+
+# Inflation tax revenue
+df['inflation tax revenue [trillions of 2017 dollars]'] = df['GDP deflator inflation']/(1 + df['GDP deflator inflation'])*df['real monetary base [trillions of 2017 dollars]'].shift()
+
+# Total seigniorage
+df['total seigniorage [trillions of 2017 dollars]'] = df['change in real monetary base [trillions of 2017 dollars]']+df['inflation tax revenue [trillions of 2017 dollars]']
+
+df.tail()
 
