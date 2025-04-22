@@ -45,10 +45,10 @@ soup = BeautifulSoup(html, 'html.parser')
 # Find title string
 title = soup.find('title').string
 
-
 try:
     float(title.string.split(' ')[1])
     pwt_version = title.string.split(' ')[1]
+    print('Automatically obtained version: ',pwt_version)
 except:
     print('Automatic PWT version identification failed.')
     pwt_version = manual_pwt_version
@@ -97,6 +97,8 @@ metadata['final_year'] = final_year
 metadata['gdp_per_capita_units'] = base_year+' dollars per person'
 
 metadata.to_csv(csv_export_path+'/pwt_metadata.csv')
+
+base_year
 
 
 # In[7]:
@@ -212,11 +214,11 @@ colors = ['red','blue','magenta','green']
 plt.scatter(income60,growth,s=0.0001)
 for i, txt in enumerate(df.columns):
     
-    ax.annotate(txt[-3:], (income60[i],growth[i]),fontsize=10,color = colors[np.mod(i,4)])
+    ax.annotate(txt[-3:], (income60.iloc[i],growth.iloc[i]),fontsize=10,color = colors[np.mod(i,4)])
 ax.grid()
 
-ax.set_xlabel('GDP per capita in 1960\n (thousands of 2011 $ PPP)')
-ax.set_ylabel('Real GDP per capita growth\nfrom 1970 to '+str(df.index[0].year)+ ' (%)')
+ax.set_xlabel('GDP per capita in 1960\n (thousands of '+base_year+' $ PPP)')
+ax.set_ylabel('Real GDP per capita growth\nfrom 1970 to '+str(df.index[-1].year)+ ' (%)')
 xlim = ax.get_xlim()
 ax.set_xlim([0,xlim[1]])
 

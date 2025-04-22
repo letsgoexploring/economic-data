@@ -9,7 +9,6 @@ from scipy.optimize import fsolve
 import matplotlib.dates as dts
 import fredpy as fp
 import pandas as pd
-import runProcs
 import matplotlib.pyplot as plt
 plt.style.use('classic')
 plt.rcParams['figure.facecolor'] = 'white'
@@ -23,6 +22,9 @@ fp.api_key = fp.load_api_key('fred_api_key.txt')
 
 # format the x axis ticksticks
 years2,years4,years5,years10,years15= dts.YearLocator(2),dts.YearLocator(4),dts.YearLocator(5),dts.YearLocator(10),dts.YearLocator(15)
+
+
+myFmt = dts.DateFormatter('%Y')
 
 
 # In[3]:
@@ -44,7 +46,7 @@ def capitalSeries(i,k0,delta):
     t0 = len(i)-1
     k = [k0]
     for t in range(t0):
-        k.append(i[t]+(1-delta)*k[t])
+        k.append(i.iloc[t]+(1-delta)*k[t])
 
     return np.array(k)
 
@@ -232,11 +234,17 @@ ax.grid(True)
 # In[9]:
 
 
+fp.cycle_dates
+
+
+# In[10]:
+
+
 # 6. Save data to csv files
 
 # 6.1 Annual data
 df = pd.DataFrame({
-    'Year':gdpA.data.index.strftime('%Y'),
+    'Year':gdpA.data.index.strftime('%Y-%m-%d'),
     'GDP [Bil. of '+baseYear+' Dollars]':gdpA.data.round(1),
     'Consumption [Bil. of '+baseYear+' Dollars]':consumptionA.data.round(1),
     'Investment [Bil. of '+baseYear+' Dollars]':investmentA.data.round(1),
@@ -265,7 +273,7 @@ df = pd.DataFrame({
 df.loc['1950-01-01':].to_csv('../csv/US_Production_Q_Data.csv',index=False)
 
 
-# In[10]:
+# In[11]:
 
 
 # 7. Compute the Solow residuals: 
@@ -314,7 +322,7 @@ exportsQ_growth = exportsQ_growth.window(['1950-01-01','2000-01-01'])
 importsQ_growth = importsQ_growth.window(['1950-01-01','2000-01-01'])
 
 
-# In[11]:
+# In[12]:
 
 
 # 11. Construct some plots
@@ -325,9 +333,9 @@ ax = fig.add_subplot(1,1,1)
 ax.plot(gdpA_growth.data,'b-',lw = 3)
 ax.plot(tfpA_growth.data,'g-',lw = 3)
 ax.xaxis.set_major_locator(years10)
-ax.set_ylabel('%')
+ax.xaxis.set_major_formatter(myFmt)
+ax.set_ylabel('Precent')
 gdpA_growth.recessions()
-fig.autofmt_xdate()
 ax.grid(True)
 ax.set_title('Annual data')
 ax.legend(['GDP growth','Solow Residual'],loc='center left', bbox_to_anchor=(1, 0.5))
@@ -339,9 +347,9 @@ ax = fig.add_subplot(1,1,1)
 ax.plot(gdpQ_growth.data,'b-',lw = 3)
 ax.plot(tfpQ_growth.data,'g-',lw = 3)
 ax.xaxis.set_major_locator(years10)
-ax.set_ylabel('%')
+ax.xaxis.set_major_formatter(myFmt)
+ax.set_ylabel('Precent')
 gdpQ_growth.recessions()
-fig.autofmt_xdate()
 ax.grid(True)
 ax.set_title('Quarterly data')
 ax.legend(['GDP growth','Solow Residual'],loc='center left', bbox_to_anchor=(1, 0.5))
@@ -352,10 +360,10 @@ fig = plt.figure(figsize=(10, 6))
 ax = fig.add_subplot(2,2,1)
 ax.plot(tfpA_growth.data,'b-',lw = 3,alpha = 0.75)
 ax.xaxis.set_major_locator(years10)
+ax.xaxis.set_major_formatter(myFmt)
 ax.set_title('TFP Growth')
-ax.set_ylabel('%')
+ax.set_ylabel('Precent')
 tfpA_growth.recessions()
-fig.autofmt_xdate()
 ax.locator_params(axis='y',nbins=6)
 ax.grid(True)
 
@@ -363,33 +371,33 @@ ax = fig.add_subplot(2,2,2)
 ax.plot(gdpA_growth.data,'b-',lw = 3,alpha = 0.75)
 ax.set_title('Real GDP Growth')
 ax.xaxis.set_major_locator(years10)
+ax.xaxis.set_major_formatter(myFmt)
 gdpA_growth.recessions()
-fig.autofmt_xdate()
 ax.grid(True)
 
 ax = fig.add_subplot(2,2,3)
 ax.plot(laborA_growth.data,'b-',lw = 3,alpha = 0.75)
 ax.xaxis.set_major_locator(years10)
+ax.xaxis.set_major_formatter(myFmt)
 laborA_growth.recessions()
-ax.set_ylabel('%')
+ax.set_ylabel('Precent')
 ax.set_title('Labor Growth')
 ax.locator_params(axis='y',nbins=6)
-fig.autofmt_xdate()
 ax.grid(True)
 
 ax = fig.add_subplot(2,2,4)
 ax.plot(capitalA_growth.data,'b-',lw = 3,alpha = 0.75)
 ax.xaxis.set_major_locator(years10)
+ax.xaxis.set_major_formatter(myFmt)
 ax.set_title('Capital Growth')
 ax.locator_params(axis='y',nbins=6)
 capitalA_growth.recessions()
-fig.autofmt_xdate()
 ax.grid(True)
 
 plt.savefig('../png/fig_US_Production_A_site.png',bbox_inches='tight')
 
 
-# In[12]:
+# In[13]:
 
 
 # 10. Save growth rate data to csv files
@@ -428,12 +436,4 @@ df = pd.concat([datesQ,gdpQ_growth.data.round(1),
 df.columns = ['Date','GDP Growth','Consumption Growth','Investment Growth','Government Purchases Growth','Exports Growth','Imports Growth','Capital Growth','Labor Growth']
 
 df.loc['1950-01-01':].to_csv('../csv/US_Production_Q_Data_Growth_Rates.csv',index=False)
-
-
-# In[13]:
-
-
-# 11. Export notebook to python script
-progName = 'us_production_data'
-runProcs.exportNb(progName)
 
