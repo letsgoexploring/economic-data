@@ -25,7 +25,7 @@ plt.rcParams['figure.facecolor'] = 'white'
 
 # import simplemapplot
 # simplemapplot.make_us_state_map({"GA":0},colors=['#7FA9CF'],output_img='usMap.svg')
-svg = open('../svg/usMap.svg', 'r').read()
+svg = open('../svg/us_map.svg', 'r').read()
 
 
 # In[3]:
@@ -82,12 +82,6 @@ state_income.index
 # In[5]:
 
 
-help(sm.OLS)
-
-
-# In[6]:
-
-
 # 2. Compute statistics
 
 state_income_from_1929 = state_income.iloc[3:]
@@ -112,7 +106,7 @@ slope = results.params.iloc[1]
 inter = results.params.iloc[0]
 
 
-# In[7]:
+# In[6]:
 
 
 # 3.1 Plots
@@ -142,7 +136,7 @@ plt.tight_layout()
 plt.savefig('../png/fig_us_statesIncomeGrowth.png',bbox_inches='tight',dpi=120)
 
 
-# In[8]:
+# In[7]:
 
 
 # 3.2 Plot income per capita in all states
@@ -173,7 +167,7 @@ plt.tight_layout()
 plt.savefig('../png/fig_us_statesIncome.png',bbox_inches='tight',dpi=120)
 
 
-# In[9]:
+# In[8]:
 
 
 # 3.2 Plot income per capita in all states
@@ -206,7 +200,7 @@ plt.tight_layout()
 plt.savefig('../png/fig_us_statesIncomeRelative.png',bbox_inches='tight',dpi=120)
 
 
-# In[10]:
+# In[9]:
 
 
 # 4. Make the maps. Reference: http://flowingdata.com/2009/11/12/how-to-make-a-us-county-thematic-map-using-free-tools/
@@ -222,7 +216,7 @@ bins = [-.25,-.15,-.05,.05,.15,.25]
 # bins = [-.45,-.25,-.1,-.05-.025,.025,.05,.1,.25,.45]
 
 
-# In[11]:
+# In[10]:
 
 
 # 4.2 Load svg with Beautiful Soup
@@ -230,10 +224,12 @@ soup = BeautifulSoup(svg, "lxml")
 paths = soup.findAll('path')
 
 
-# In[12]:
+# In[11]:
 
 
 # 4.3 Create color-coded maps for each year
+
+os.makedirs('../frames', exist_ok=True)
 
 path_style = 'font-size:12px;fill-rule:nonzero;stroke:#FFFFFF;stroke-opacity:1;stroke-width:0.1;stroke-miterlimit:4;stroke-dasharray:none;stroke-linecap:butt;marker-start:none;stroke-linejoin:bevel;fill:'
 states = state_income.columns.tolist()
@@ -310,22 +306,24 @@ for t,year in enumerate(state_income.index):
     subprocess.call(convert,shell=True)
 
 
-# In[13]:
+# In[12]:
 
 
 # 4.4 Create gif with imagemagick
+os.makedirs('../gif', exist_ok=True)
 makegif = 'magick -loop 0 -delay 50x100 ../frames/*.png ../gif/us_state_convergence.gif'
 subprocess.call(makegif,shell=True)
 
 
-# In[14]:
+# In[13]:
 
 
 # 4.5 Convert gif to mp4 with ffmpeg
+os.makedirs('../mp4', exist_ok=True)
 subprocess.call('ffmpeg -i ../gif/us_state_convergence.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" ../mp4/us_state_convergence.mp4',shell=True)
 
 
-# In[15]:
+# In[14]:
 
 
 # 5. Clean up

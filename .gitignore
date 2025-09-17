@@ -1,5 +1,6 @@
 # Media files
 *.svg
+!**/us_map.svg
 *.mov
 *.mp4
 *.gif
